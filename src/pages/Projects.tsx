@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,22 +6,28 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import Navbar from "@/components/Navbar";
 import { Search } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface Project {
-  id: number;
+  id: string;
   title: string;
   category: string;
-  progress: number;
-  cost: string;
-  ward: string;
-  contractor: string;
-  startDate: string;
-  completionDate: string;
+  progress_percent: number;
+  cost: number;
+  ward: number;
+  contractor: string | null;
+  start_date: string;
+  completion_date: string | null;
+  short_description: string;
 }
 
 const Projects = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   const categories = [
     "All",
@@ -31,66 +37,44 @@ const Projects = () => {
     "Sanitation",
     "Metro",
     "Parks",
-    "Water Supply",
+    "Footpath",
+    "Others",
   ];
 
-  const projects: Project[] = [
-    {
-      id: 1,
-      title: "Flyover at 90 Feet Road",
-      category: "Flyover",
-      progress: 47,
-      cost: "₹85 Crore",
-      ward: "Ward 145",
-      contractor: "L&T Construction",
-      startDate: "Jan 2023",
-      completionDate: "Dec 2024",
-    },
-    {
-      id: 2,
-      title: "Sewage Line Repair - Koramangala",
-      category: "Drainage",
-      progress: 60,
-      cost: "₹12 Crore",
-      ward: "Ward 150",
-      contractor: "BBMP Contractors Ltd",
-      startDate: "Mar 2023",
-      completionDate: "Aug 2024",
-    },
-    {
-      id: 3,
-      title: "Public Park Development - HSR Layout",
-      category: "Parks",
-      progress: 40,
-      cost: "₹5 Crore",
-      ward: "Ward 185",
-      contractor: "Green City Projects",
-      startDate: "Feb 2023",
-      completionDate: "Oct 2024",
-    },
-    {
-      id: 4,
-      title: "Road Widening - Bannerghatta Road",
-      category: "Roads",
-      progress: 35,
-      cost: "₹45 Crore",
-      ward: "Ward 188",
-      contractor: "Infra Builders Pvt Ltd",
-      startDate: "Apr 2023",
-      completionDate: "Mar 2025",
-    },
-    {
-      id: 5,
-      title: "Water Pipeline Extension - JP Nagar",
-      category: "Water Supply",
-      progress: 55,
-      cost: "₹18 Crore",
-      ward: "Ward 178",
-      contractor: "Aqua Solutions",
-      startDate: "Jan 2023",
-      completionDate: "Sep 2024",
-    },
-  ];
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  const fetchProjects = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("projects")
+        .select("*")
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      
+      setProjects(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error loading projects",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formatCurrency = (amount: number) => {
+    const crores = amount / 10000000;
+    return `₹${crores.toFixed(2)} Cr`;
+  };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-IN", { month: "short", year: "numeric" });
+  };
 
   const filteredProjects = projects.filter((project) => {
     const matchesCategory =
@@ -147,52 +131,66 @@ const Projects = () => {
         </Card>
 
         {/* Projects Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {filteredProjects.map((project) => (
-            <Card key={project.id} className="p-6 hover:shadow-lg transition-shadow">
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <h3 className="text-xl font-bold mb-2">{project.title}</h3>
-                  <Badge className="bg-primary">{project.category}</Badge>
+        {loading ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">Loading projects...</p>
+          </div>
+        ) : filteredProjects.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-muted-foreground">No projects found.</p>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 gap-6">
+            {filteredProjects.map((project) => (
+              <Card key={project.id} className="p-6 hover:shadow-lg transition-shadow">
+                <div className="flex items-start justify-between mb-4">
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">{project.title}</h3>
+                    <Badge className="bg-primary">{project.category}</Badge>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-primary">
+                      {project.progress_percent}%
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-primary">
-                    {project.progress}%
-                  </p>
-                </div>
-              </div>
 
-              <Progress value={project.progress} className="mb-4 h-3" />
+                <Progress value={project.progress_percent} className="mb-4 h-3" />
 
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-muted-foreground">Cost</p>
-                  <p className="font-semibold">{project.cost}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Ward</p>
-                  <p className="font-semibold">{project.ward}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Start Date</p>
-                  <p className="font-semibold">{project.startDate}</p>
-                </div>
-                <div>
-                  <p className="text-muted-foreground">Completion</p>
-                  <p className="font-semibold">{project.completionDate}</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-muted-foreground">Contractor</p>
-                  <p className="font-semibold">{project.contractor}</p>
-                </div>
-              </div>
+                <p className="text-sm text-muted-foreground mb-4">{project.short_description}</p>
 
-              <Button variant="outline" className="w-full mt-4">
-                View Details
-              </Button>
-            </Card>
-          ))}
-        </div>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-muted-foreground">Cost</p>
+                    <p className="font-semibold">{formatCurrency(project.cost)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Ward</p>
+                    <p className="font-semibold">Ward {project.ward}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Start Date</p>
+                    <p className="font-semibold">{formatDate(project.start_date)}</p>
+                  </div>
+                  <div>
+                    <p className="text-muted-foreground">Completion</p>
+                    <p className="font-semibold">
+                      {project.completion_date ? formatDate(project.completion_date) : "TBD"}
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <p className="text-muted-foreground">Contractor</p>
+                    <p className="font-semibold">{project.contractor || "N/A"}</p>
+                  </div>
+                </div>
+
+                <Button variant="outline" className="w-full mt-4">
+                  View Details
+                </Button>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

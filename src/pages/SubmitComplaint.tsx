@@ -16,6 +16,8 @@ import Navbar from "@/components/Navbar";
 import { MapPin, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const SubmitComplaint = () => {
   const [category, setCategory] = useState("");
@@ -24,8 +26,10 @@ const SubmitComplaint = () => {
   const [description, setDescription] = useState("");
   const [anonymous, setAnonymous] = useState(false);
   const [image, setImage] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     // Get user's location
@@ -57,26 +61,53 @@ const SubmitComplaint = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!category || !location || !description) {
+    if (!category || !location || !description || !coordinates) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields.",
+        description: "Please fill in all required fields and enable location access.",
         variant: "destructive",
       });
       return;
     }
 
-    toast({
-      title: "Complaint Submitted!",
-      description: "Your complaint has been registered successfully. Track ID: #" + Math.floor(Math.random() * 10000),
-    });
+    setLoading(true);
 
-    setTimeout(() => {
-      navigate("/track-complaints");
-    }, 1500);
+    try {
+      const { error } = await supabase.from("complaints").insert({
+        citizen_id: anonymous ? null : (user?.id || null),
+        is_anonymous: anonymous,
+        category,
+        description,
+        location: {
+          latitude: coordinates.lat,
+          longitude: coordinates.lng,
+          address: location
+        },
+        status: "Open",
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Complaint Submitted!",
+        description: "Your complaint has been registered successfully.",
+      });
+
+      setTimeout(() => {
+        navigate("/track-complaints");
+      }, 1500);
+    } catch (error: any) {
+      toast({
+        title: "Submission Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -197,8 +228,9 @@ const SubmitComplaint = () => {
               type="submit"
               size="lg"
               className="w-full h-14 text-lg bg-primary hover:bg-primary/90"
+              disabled={loading}
             >
-              Submit
+              {loading ? "Submitting..." : "Submit"}
             </Button>
           </form>
         </Card>

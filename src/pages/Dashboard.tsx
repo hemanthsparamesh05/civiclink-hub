@@ -6,20 +6,66 @@ import ComplaintCard from "@/components/ComplaintCard";
 import ProjectCard from "@/components/ProjectCard";
 import BudgetChart from "@/components/BudgetChart";
 import { MapPin } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
-  const recentComplaints = [
-    { category: "Potholes", description: "Please fix the potholes on 5th Cross, Indiranagar", timeAgo: "30m ago" },
-    { category: "Streetlight", description: "Streetlight not working on 1st Phase, Koramangala", timeAgo: "13m ago" },
-    { category: "Garbage", description: "Garbage collection not happening on 12th Main, JP Nagar", timeAgo: "43m ago" },
-    { category: "Water", description: "Water supply disrupted for 3 days", timeAgo: "42m ago" },
-  ];
+  const [recentComplaints, setRecentComplaints] = useState<any[]>([]);
+  const [ongoingProjects, setOngoingProjects] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const ongoingProjects = [
-    { title: "Flyover at 90 Feet Road", category: "Flyover", progress: 47, progressLabel: "10%" },
-    { title: "Sewage Line Repair", category: "Drainage", progress: 60, progressLabel: "60%" },
-    { title: "Public Park", category: "Parks", progress: 40, progressLabel: "40%" },
-  ];
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      // Fetch recent complaints
+      const { data: complaintsData } = await supabase
+        .from("complaints")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(4);
+
+      // Fetch ongoing projects
+      const { data: projectsData } = await supabase
+        .from("projects")
+        .select("*")
+        .order("progress_percent", { ascending: false })
+        .limit(3);
+
+      if (complaintsData) {
+        setRecentComplaints(complaintsData.map(c => ({
+          category: c.category,
+          description: c.description,
+          timeAgo: getTimeAgo(c.created_at)
+        })));
+      }
+
+      if (projectsData) {
+        setOngoingProjects(projectsData.map(p => ({
+          title: p.title,
+          category: p.category,
+          progress: p.progress_percent,
+          progressLabel: `${p.progress_percent}%`
+        })));
+      }
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000 / 60);
+    
+    if (diff < 60) return `${diff}m ago`;
+    if (diff < 1440) return `${Math.floor(diff / 60)}h ago`;
+    return `${Math.floor(diff / 1440)}d ago`;
+  };
 
   return (
     <div className="min-h-screen bg-background">
