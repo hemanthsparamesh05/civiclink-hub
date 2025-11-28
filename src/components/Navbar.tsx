@@ -1,9 +1,16 @@
-import { MapPin } from "lucide-react";
+import { MapPin, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <nav className="bg-card border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-card/95">
@@ -14,19 +21,37 @@ const Navbar = () => {
         </Link>
         
         <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            onClick={() => navigate("/auth")}
-            className="border-border hover:bg-secondary"
-          >
-            Citizen Login
-          </Button>
-          <Button
-            onClick={() => navigate("/auth")}
-            className="bg-primary hover:bg-primary/90"
-          >
-            Official Login
-          </Button>
+          {user ? (
+            <>
+              <span className="text-sm text-muted-foreground">
+                {user.email}
+              </span>
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="border-border hover:bg-secondary"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => navigate("/auth")}
+                className="border-border hover:bg-secondary"
+              >
+                Citizen Login
+              </Button>
+              <Button
+                onClick={() => navigate("/auth")}
+                className="bg-primary hover:bg-primary/90"
+              >
+                Official Login
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </nav>
