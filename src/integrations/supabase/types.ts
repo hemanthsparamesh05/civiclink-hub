@@ -14,16 +14,198 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      budget_flow: {
+        Row: {
+          bbmp_budget: number
+          category_wise_breakdown: Json
+          central_funds: number
+          created_at: string
+          fiscal_year: string
+          id: string
+          state_funds: number
+          updated_at: string
+        }
+        Insert: {
+          bbmp_budget: number
+          category_wise_breakdown: Json
+          central_funds: number
+          created_at?: string
+          fiscal_year?: string
+          id?: string
+          state_funds: number
+          updated_at?: string
+        }
+        Update: {
+          bbmp_budget?: number
+          category_wise_breakdown?: Json
+          central_funds?: number
+          created_at?: string
+          fiscal_year?: string
+          id?: string
+          state_funds?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      complaints: {
+        Row: {
+          category: string
+          citizen_id: string | null
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          is_anonymous: boolean | null
+          location: Json
+          official_assigned: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          citizen_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          is_anonymous?: boolean | null
+          location: Json
+          official_assigned?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          citizen_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          is_anonymous?: boolean | null
+          location?: Json
+          official_assigned?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          category: string
+          completion_date: string | null
+          contractor: string | null
+          cost: number
+          created_at: string
+          detailed_description: string | null
+          duration_months: number | null
+          geo_location: Json | null
+          id: string
+          images: string[] | null
+          progress_percent: number | null
+          short_description: string
+          start_date: string
+          title: string
+          updated_at: string
+          ward: number
+        }
+        Insert: {
+          category: string
+          completion_date?: string | null
+          contractor?: string | null
+          cost: number
+          created_at?: string
+          detailed_description?: string | null
+          duration_months?: number | null
+          geo_location?: Json | null
+          id?: string
+          images?: string[] | null
+          progress_percent?: number | null
+          short_description: string
+          start_date: string
+          title: string
+          updated_at?: string
+          ward: number
+        }
+        Update: {
+          category?: string
+          completion_date?: string | null
+          contractor?: string | null
+          cost?: number
+          created_at?: string
+          detailed_description?: string | null
+          duration_months?: number | null
+          geo_location?: Json | null
+          id?: string
+          images?: string[] | null
+          progress_percent?: number | null
+          short_description?: string
+          start_date?: string
+          title?: string
+          updated_at?: string
+          ward?: number
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "official" | "citizen"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +332,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "official", "citizen"],
+    },
   },
 } as const
