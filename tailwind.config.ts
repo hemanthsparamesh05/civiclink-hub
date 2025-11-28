@@ -47,15 +47,18 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+        civic: {
+          blue: "hsl(var(--civic-blue))",
+          "blue-dark": "hsl(var(--civic-blue-dark))",
+          map: "hsl(var(--civic-map))",
+        },
+        chart: {
+          roads: "hsl(var(--chart-roads))",
+          waste: "hsl(var(--chart-waste))",
+          water: "hsl(var(--chart-water))",
+          education: "hsl(var(--chart-education))",
+          sanitation: "hsl(var(--chart-sanitation))",
+          safety: "hsl(var(--chart-safety))",
         },
       },
       borderRadius: {
