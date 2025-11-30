@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import Navbar from "@/components/Navbar";
-import { Search } from "lucide-react";
+import { Search, Download, FileSpreadsheet, FileText } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -86,6 +86,44 @@ const Projects = () => {
     return matchesCategory && matchesSearch;
   });
 
+  const downloadFiles = [
+    {
+      name: "BBMP Budget 2023-24 Tables",
+      description: "Complete budget breakdown in Excel format",
+      url: "/data/BBMP-Budget-2023-24-Tables.xlsx",
+      icon: FileSpreadsheet,
+      type: "XLSX"
+    },
+    {
+      name: "BBMP Budget 2023-24 Full Book",
+      description: "Official budget document (PDF)",
+      url: "/data/BBMP-Budget-2023-24-Full-Book.pdf",
+      icon: FileText,
+      type: "PDF"
+    },
+    {
+      name: "Budget Highlights 2023-24",
+      description: "Summary of key budget allocations",
+      url: "/data/BBMP-Budget-2023-24-Highlights.pdf",
+      icon: FileText,
+      type: "PDF"
+    },
+    {
+      name: "Work Orders Data (2015-18)",
+      description: "CE Projects work orders in CSV format",
+      url: "/data/bbmp-work-order-data-303-ce-projects-2015-18.csv",
+      icon: FileSpreadsheet,
+      type: "CSV"
+    },
+    {
+      name: "Ward Work Orders Sample",
+      description: "Kempegowda Ward work orders",
+      url: "/data/bbmp-ward-001-work-orders.csv",
+      icon: FileSpreadsheet,
+      type: "CSV"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -97,6 +135,42 @@ const Projects = () => {
             Track all civic infrastructure projects in Bengaluru
           </p>
         </div>
+
+        {/* Download Data Section */}
+        <Card className="p-6 mb-6 bg-gradient-to-br from-primary/5 to-primary/10">
+          <div className="flex items-center gap-2 mb-4">
+            <Download className="w-5 h-5 text-primary" />
+            <h2 className="text-xl font-bold">Download Official Data</h2>
+          </div>
+          <p className="text-sm text-muted-foreground mb-4">
+            Access official BBMP budget documents and project data from OpenCity Urban Data Portal
+          </p>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {downloadFiles.map((file, index) => (
+              <a
+                key={index}
+                href={file.url}
+                download
+                className="flex items-start gap-3 p-3 rounded-lg border border-border bg-background hover:bg-accent transition-colors group"
+              >
+                <file.icon className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="font-semibold text-sm group-hover:text-primary transition-colors truncate">
+                      {file.name}
+                    </p>
+                    <Badge variant="outline" className="text-xs flex-shrink-0">
+                      {file.type}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-2">
+                    {file.description}
+                  </p>
+                </div>
+              </a>
+            ))}
+          </div>
+        </Card>
 
         {/* Search and Filters */}
         <Card className="p-6 mb-6">
